@@ -252,7 +252,6 @@ public:
         this->list = builder->get_widget<Gtk::Box>("list");
         this->labelOutput = builder->get_widget<Gtk::Label>("label-output");
         this->switchEnabled = builder->get_widget<Gtk::Switch>("switch-enabled");
-        // printf("AAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\n");
         this->windowAbout = builder->get_widget<Gtk::Window>("wnd-about");
         this->windowLicense = builder->get_widget<Gtk::Window>("wnd-license");
 
