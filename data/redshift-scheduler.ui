@@ -40,7 +40,6 @@
               <object class="GtkLabel" id="label-output">
                 <property name="css-classes">
 </property>
-                <property name="width-chars">36</property>
                 <style>
                   <class name="warning-label"/>
                 </style>
@@ -67,15 +66,27 @@
             <property name="orientation">vertical</property>
             <property name="vexpand">True</property>
             <child>
+              <object class="GtkLabel">
+                <property name="label">Other config</property>
+                <property name="margin-bottom">3</property>
+                <property name="margin-top">3</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkBox">
+                <property name="margin-top">3</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="hexpand">True</property>
                     <property name="label">Enabled</property>
+                    <property name="margin-end">6</property>
+                    <property name="margin-start">16</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSwitch" id="switch-enabled"/>
+                  <object class="GtkSwitch" id="switch-enabled">
+                    <property name="margin-end">10</property>
+                    <property name="margin-start">6</property>
+                  </object>
                 </child>
               </object>
             </child>

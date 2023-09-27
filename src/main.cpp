@@ -2,6 +2,7 @@
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
 #include "gtkmm/entry.h"
+#include "gtkmm/enums.h"
 #include "gtkmm/label.h"
 #include "gtkmm/scrolledwindow.h"
 #include "gtkmm/window.h"
@@ -207,6 +208,8 @@ public:
         box.append(btnDelete);
         entryTime.set_hexpand(true);
         entryTemperature.set_hexpand(true);
+        entryTime.set_alignment(Gtk::Align::CENTER);
+        entryTemperature.set_alignment(Gtk::Align::CENTER);
         entryTime.set_placeholder_text("Time (0:00-23:59)");
         entryTemperature.set_placeholder_text("Temp (1000-25000)");
         btnDelete.set_icon_name("edit-delete");
