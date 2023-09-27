@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.12.1 -->
+<interface>
+  <!-- interface-name redshift-scheduler.ui -->
+  <requires lib="gtk" version="4.10"/>
+  <object class="GtkWindow" id="wnd">
+    <property name="default-height">256</property>
+    <property name="default-width">512</property>
+    <property name="title">redshift-scheduler</property>
+    <child>
+      <object class="GtkGrid">
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="margin-bottom">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-start">6</property>
+            <property name="margin-top">6</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Scheduled colour temperatures</property>
+                <property name="margin-bottom">3</property>
+                <property name="margin-top">3</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="child">
+                  <object class="GtkBox" id="list">
+                    <property name="hexpand">True</property>
+                    <property name="orientation">vertical</property>
+                  </object>
+                </property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label-output">
+                <property name="css-classes">
+</property>
+                <property name="width-chars">36</property>
+                <style>
+                  <class name="warning-label"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="btn-add">
+                <property name="label">Add</property>
+              </object>
+            </child>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">0</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-top">6</property>
+            <property name="orientation">vertical</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="label">Enabled</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSwitch" id="switch-enabled"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="btn-save">
+                <property name="label">Save</property>
+                <property name="valign">end</property>
+                <property name="vexpand">True</property>
+              </object>
+            </child>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">0</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
