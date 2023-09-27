@@ -155,8 +155,9 @@ class BasicCommunication {
 public:
     std::optional<CommandMessage> readCommandTimeout(const std::chrono::seconds& timeout) {
         std::unique_lock lock(commandMutex);
+        std::chrono::time_point endWaitingTimePoint = std::chrono::system_clock::now() + timeout;
         if (commands.empty()) {
-            commandVar.wait_for(lock, timeout, [this](){
+            commandVar.wait_until(lock, endWaitingTimePoint, [this](){
                 return !commands.empty();
             });
         }
@@ -386,8 +387,13 @@ void invokeRedshift(int temperature) {
 }
 
 std::chrono::seconds updateRedshift(const ScheduleList& list) {
-    if (list.size() <= 1)
+    if (list.size() <= 1) {
+        if (list.size() == 1) {
+            auto& entry = list.front();
+            invokeRedshift(entry.second);
+        }
         return std::chrono::seconds(60*60*24);
+    }
 
     std::chrono::time_point timePoint = std::chrono::system_clock::now();
     std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
