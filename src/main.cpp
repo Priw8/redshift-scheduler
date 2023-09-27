@@ -2,10 +2,13 @@
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
 #include "gtkmm/aboutdialog.h"
+#include "gtkmm/button.h"
+#include "gtkmm/cssprovider.h"
 #include "gtkmm/entry.h"
 #include "gtkmm/enums.h"
 #include "gtkmm/label.h"
 #include "gtkmm/scrolledwindow.h"
+#include "gtkmm/styleprovider.h"
 #include "gtkmm/switch.h"
 #include "gtkmm/window.h"
 #include <bits/types/struct_tm.h>
@@ -249,13 +252,19 @@ public:
         this->list = builder->get_widget<Gtk::Box>("list");
         this->labelOutput = builder->get_widget<Gtk::Label>("label-output");
         this->switchEnabled = builder->get_widget<Gtk::Switch>("switch-enabled");
+        // printf("AAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\n");
+        this->windowAbout = builder->get_widget<Gtk::Window>("wnd-about");
+        this->windowLicense = builder->get_widget<Gtk::Window>("wnd-license");
 
         auto btnAdd = builder->get_widget<Gtk::Button>("btn-add");
         auto btnSave = builder->get_widget<Gtk::Button>("btn-save");
         auto btnAbout = builder->get_widget<Gtk::Button>("btn-about");
+        auto btnLicense = builder->get_widget<Gtk::Button>("btn-license");
+        auto btnAboutClose = builder->get_widget<Gtk::Button>("btn-about-close");
         auto wnd = builder->get_widget<Gtk::Window>("wnd");
 
-        if (!this->list || !this->labelOutput || !this->switchEnabled || !btnAdd || !btnSave || !btnAbout || !wnd) {
+        if (!this->list || !this->labelOutput || !this->switchEnabled || !btnAdd || !btnSave || !btnAbout
+          || !btnLicense || !btnAboutClose || !wnd || !windowAbout || !windowLicense) {
             throw std::runtime_error("ui file is invalid or corrupt");
         }
 
@@ -267,14 +276,27 @@ public:
             save();
         });
 
-        btnAbout->signal_clicked().connect([wnd]() {
-            // TODO
+        btnAbout->signal_clicked().connect([this]() {
+            windowAbout->show();
         });
+
+        btnLicense->signal_clicked().connect([this]() {
+            windowLicense->show();
+        });
+
+        btnAboutClose->signal_clicked().connect([this]() {
+            windowAbout->hide();
+        });
+
+        cssProvider = Gtk::CssProvider::create();
+        Gtk::StyleProvider::add_provider_for_display(wnd->get_display(), cssProvider, 0);
+        cssProvider->load_from_path("redshift-scheduler.css");
 
         loadConfigFile();
         sendUpdate();
 
         this->app->add_window(*wnd);
+        this->app->add_window(*windowAbout);
         wnd->set_visible(true);
     }
     void setOutputLabel(const char* message) {
@@ -327,7 +349,10 @@ public:
     }
 private:
     Glib::RefPtr<Gtk::Application> app;
+    Glib::RefPtr<Gtk::CssProvider> cssProvider;
     Glib::RefPtr<Gtk::Builder> builder;
+    Gtk::Window* windowAbout;    // Managed by the builder
+    Gtk::Window* windowLicense;  // Managed by the builder
     Gtk::Box* list;              // Managed by the builder
     Gtk::Label* labelOutput;     // Managed by the builder
     Gtk::Switch* switchEnabled;  // Managed by the builder
