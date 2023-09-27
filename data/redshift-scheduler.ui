@@ -4,8 +4,9 @@
   <!-- interface-name redshift-scheduler.ui -->
   <requires lib="gtk" version="4.10"/>
   <object class="GtkWindow" id="wnd">
-    <property name="default-height">256</property>
+    <property name="default-height">300</property>
     <property name="default-width">512</property>
+    <property name="icon-name">emblem-favorite</property>
     <property name="title">redshift-scheduler</property>
     <child>
       <object class="GtkGrid">
@@ -84,6 +85,7 @@
                 </child>
                 <child>
                   <object class="GtkSwitch" id="switch-enabled">
+                    <property name="active">True</property>
                     <property name="margin-end">10</property>
                     <property name="margin-start">6</property>
                   </object>
@@ -91,10 +93,21 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton" id="btn-save">
-                <property name="label">Save</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
                 <property name="valign">end</property>
                 <property name="vexpand">True</property>
+                <child>
+                  <object class="GtkButton" id="btn-about">
+                    <property name="label">About</property>
+                    <property name="margin-bottom">6</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="btn-save">
+                    <property name="label">Save</property>
+                  </object>
+                </child>
               </object>
             </child>
             <layout>

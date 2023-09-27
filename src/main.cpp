@@ -1,10 +1,12 @@
 #include "glibmm/miscutils.h"
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
+#include "gtkmm/aboutdialog.h"
 #include "gtkmm/entry.h"
 #include "gtkmm/enums.h"
 #include "gtkmm/label.h"
 #include "gtkmm/scrolledwindow.h"
+#include "gtkmm/switch.h"
 #include "gtkmm/window.h"
 #include <bits/types/struct_tm.h>
 #include <cctype>
@@ -246,20 +248,32 @@ public:
         this->builder = Gtk::Builder::create_from_file("redshift-scheduler.ui");
         this->list = builder->get_widget<Gtk::Box>("list");
         this->labelOutput = builder->get_widget<Gtk::Label>("label-output");
+        this->switchEnabled = builder->get_widget<Gtk::Switch>("switch-enabled");
 
         auto btnAdd = builder->get_widget<Gtk::Button>("btn-add");
+        auto btnSave = builder->get_widget<Gtk::Button>("btn-save");
+        auto btnAbout = builder->get_widget<Gtk::Button>("btn-about");
+        auto wnd = builder->get_widget<Gtk::Window>("wnd");
+
+        if (!this->list || !this->labelOutput || !this->switchEnabled || !btnAdd || !btnSave || !btnAbout || !wnd) {
+            throw std::runtime_error("ui file is invalid or corrupt");
+        }
+
         btnAdd->signal_clicked().connect([this]() {
             addNewEntry();
         });
 
-        builder->get_widget<Gtk::Button>("btn-save")->signal_clicked().connect([this]() {
+        btnSave->signal_clicked().connect([this]() {
             save();
+        });
+
+        btnAbout->signal_clicked().connect([wnd]() {
+            // TODO
         });
 
         loadConfigFile();
         sendUpdate();
 
-        auto wnd = builder->get_widget<Gtk::Window>("wnd");
         this->app->add_window(*wnd);
         wnd->set_visible(true);
     }
@@ -268,6 +282,12 @@ public:
     }
     void setOutputLabel(std::string& message) {
         labelOutput->set_label(message);
+    }
+    bool getIsEnabled() const {
+        return switchEnabled->get_active();
+    }
+    void setIsEnabled(bool enabled) {
+        switchEnabled->set_active(enabled);
     }
     std::unique_ptr<ScheduledTemperature>& addNewEntry() {
         entries.push_back(std::make_unique<ScheduledTemperature>());
@@ -283,13 +303,18 @@ public:
         try {
             std::pair<ScheduledTime, int> prev;
             std::string output = "# redshift-scheduler configuration file\n";
+
+            if (!getIsEnabled()) {
+                output += "\ndisabled\n";
+            }
+
             for (auto& entry : entries) {
                 auto curr = std::make_pair(entry->getTime(), entry->getTemperature());
                 // If temperature is 0 it means that it's the default-initialized prev, so skip it
                 if (prev.second != 0 && prev.first >= curr.first) {
                     throw std::runtime_error("Time entries must be ordered chronologically");
                 }
-                output += "\n" + std::to_string(curr.first.hours) + ":" + std::to_string(curr.first.minutes) + "\n";
+                output += "\n" + curr.first.toString() + "\n";
                 output += std::to_string(curr.second) + "K\n";
                 prev = curr;
             }
@@ -303,8 +328,9 @@ public:
 private:
     Glib::RefPtr<Gtk::Application> app;
     Glib::RefPtr<Gtk::Builder> builder;
-    Gtk::Box* list;           // Managed by the builder
-    Gtk::Label* labelOutput;  // Managed by the builder
+    Gtk::Box* list;              // Managed by the builder
+    Gtk::Label* labelOutput;     // Managed by the builder
+    Gtk::Switch* switchEnabled;  // Managed by the builder
 
     std::list<std::unique_ptr<ScheduledTemperature>> entries;
 
@@ -328,10 +354,15 @@ private:
     }
 
     void sendUpdate() {
-        communication.writeCommand({
-            UPDATE,
-            createScheduleList()
-        });
+        if (getIsEnabled()) {
+            communication.writeCommand({
+                UPDATE,
+                createScheduleList()
+            });
+        } else {
+            // If it's disabled, we can just send an empty list to the worker thread
+            communication.writeCommand({UPDATE});
+        }
     }
 
     void writeConfigFile(const std::string& cfg) {
@@ -364,7 +395,9 @@ private:
                 continue;
 
             try {
-                if (!time.has_value()) {
+                if (std::strcmp(trimmed, "disabled") == 0) {
+                    setIsEnabled(false);
+                } else if (!time.has_value()) {
                     time = parseTime(trimmed);
                 } else {
                     temperature = parseTemperature(trimmed);
@@ -391,6 +424,9 @@ void invokeRedshift(int temperature) {
 
 std::chrono::seconds updateRedshift(const ScheduleList& list) {
     if (list.size() <= 1) {
+        if (list.size() == 0) {
+            invokeRedshift(6500);
+        }
         if (list.size() == 1) {
             auto& entry = list.front();
             invokeRedshift(entry.second);
@@ -434,9 +470,8 @@ std::chrono::seconds updateRedshift(const ScheduleList& list) {
 
 int worker() {
     ScheduleList schedule;
+    std::chrono::seconds nextUpdate(60*60*24);
     while(1) {
-        std::chrono::seconds nextUpdate = updateRedshift(schedule);
-        
         auto cmd = communication.readCommandTimeout(nextUpdate);
         if (cmd.has_value()) {
             if (cmd->type == TERMINATE) {
@@ -445,6 +480,7 @@ int worker() {
                 schedule = cmd->schedule;
             }
         }
+        nextUpdate = updateRedshift(schedule);
     }
 
     return 0;
